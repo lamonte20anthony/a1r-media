@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A1R PHOTOGRAPHY CONVERTER</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:40px}
+.container{max-width:700px;margin:auto;background:#fff;padding:30px;border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.1)}
+h1{text-align:center;margin-top:0}
+textarea{width:100%;box-sizing:border-box;height:110px;padding:14px;font-size:17px;border:1px solid #ccc;border-radius:8px;resize:vertical}
+.actions{margin-top:12px}
+button{padding:12px 18px;border:0;border-radius:8px;font-size:16px;cursor:pointer;margin-right:6px}
+button:hover{opacity:.85}
+.copy{background:#ddd}.clear{background:#eee}
+.result{margin-top:20px;padding:15px;background:#f1f1f1;border-radius:8px;min-height:24px;word-break:break-all;font-weight:bold}
+.count,.status{margin-top:9px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>A1R PHOTOGRAPHY CONVERTER</h1>
+<textarea id="input" placeholder="Enter photography text..."></textarea>
+<div class="actions">
+<button onclick="convertText()">Convert</button>
+<button class="copy" onclick="copyResult()">Copy Result</button>
+<button class="clear" onclick="clearAll()">Clear</button>
+</div>
+<div class="result" id="output"></div>
+<div class="count" id="count"></div>
+<div class="status" id="status"></div>
+</div>
+
+<script>
+function normalize(text){
+    text = text.trim().toUpperCase();
+
+    const rules = [
+        ["AERIAL TWILIGHT PHOTOGRAPHY", "ATP"],
+        ["AERIAL SUNSET PHOTOGRAPHY", "ASP"],
+        ["AERIAL DAY PHOTOGRAPHY", "ADP"],
+        ["EXTERIOR SUNSET PHOTOGRAPHY", "ESP"],
+        ["EXTERIOR BUILDING PHOTOGRAPHY", "BEP"],
+        ["INTERIOR BUILDING PHOTOGRAPHY", "BIP"],
+        ["INTERIOR PHOTOGRAPHY", "IP"],
+        ["EXTERIOR PHOTOGRAPHY", "EP"],
+        ["AERIAL PHOTOGRAPHY", "AP"],
+        ["TWILIGHT PHOTOGRAPHY", "TP"],
+        ["VIRTUAL STAGING", "VS"]
+    ];
+
+    rules.forEach(([phrase, code]) => {
+        text = text.replaceAll(phrase, code);
+    });
+
+    text = text.replace(/[\s-]+/g, "-");
+    text = text.replace(/^-+|-+$/g, "");
+
+    return text;
+}
+
+function convertText(){
+    const text = normalize(document.getElementById("input").value);
+    const result = text ? text + "-©-A1R" : "";
+    document.getElementById("output").textContent = result;
+    document.getElementById("count").textContent = result ? "Characters: " + result.length : "";
+    document.getElementById("status").textContent = "";
+}
+
+async function copyResult(){
+    const result = document.getElementById("output").textContent;
+    const status = document.getElementById("status");
+
+    if(!result){ status.textContent = "Nothing to copy."; return; }
+
+    try{
+        await navigator.clipboard.writeText(result);
+        status.textContent = "Copied!";
+    }catch(e){
+        const area=document.createElement("textarea");
+        area.value=result;
+        area.style.position="fixed";
+        area.style.left="-9999px";
+        document.body.appendChild(area);
+        area.focus();
+        area.select();
+        try{
+            document.execCommand("copy");
+            status.textContent="Copied!";
+        }catch(err){
+            status.textContent="Copy blocked by browser. Press Ctrl+C after selecting the result.";
+        }
+        area.remove();
+    }
+}
+
+function clearAll(){
+    document.getElementById("input").value="";
+    document.getElementById("output").textContent="";
+    document.getElementById("count").textContent="";
+    document.getElementById("status").textContent="";
+    document.getElementById("input").focus();
+}
+</script>
+</body>
+</html>
