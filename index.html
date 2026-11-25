@@ -5,13 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A1R PHOTOGRAPHY CONVERTER</title>
 <style>
-body{font-family:Arial,sans-serif;background:#191919;margin:0;padding:40px}
+body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:40px}
 .container{max-width:700px;margin:auto;background:#fff;padding:30px;border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.1)}
 h1{text-align:center;margin-top:0}
 textarea{width:100%;box-sizing:border-box;height:110px;padding:14px;font-size:17px;border:1px solid #ccc;border-radius:8px;resize:vertical}
 .actions{margin-top:12px}
 button{padding:12px 18px;border:0;border-radius:8px;font-size:16px;cursor:pointer;margin-right:6px}
-button:hover{opacity:.85}
 .copy{background:#ddd}.clear{background:#eee}
 .result{margin-top:20px;padding:15px;background:#f1f1f1;border-radius:8px;min-height:24px;word-break:break-all;font-weight:bold}
 .count,.status{margin-top:9px;font-size:14px}
@@ -30,11 +29,9 @@ button:hover{opacity:.85}
 <div class="count" id="count"></div>
 <div class="status" id="status"></div>
 </div>
-
 <script>
 function normalize(text){
     text = text.trim().toUpperCase();
-
     const rules = [
         ["AERIAL TWILIGHT PHOTOGRAPHY", "ATP"],
         ["AERIAL SUNSET PHOTOGRAPHY", "ASP"],
@@ -45,55 +42,40 @@ function normalize(text){
         ["INTERIOR PHOTOGRAPHY", "IP"],
         ["EXTERIOR PHOTOGRAPHY", "EP"],
         ["AERIAL PHOTOGRAPHY", "AP"],
-        ["TWILIGHT PHOTOGRAPHY", "TP"],
-        ["VIRTUAL STAGING", "VS"]
+        ["TWILIGHT PHOTOGRAPHY", "TP"]
     ];
-
-    rules.forEach(([phrase, code]) => {
-        text = text.replaceAll(phrase, code);
-    });
-
-    text = text.replace(/[\s-]+/g, "-");
-    text = text.replace(/^-+|-+$/g, "");
-
-    return text;
+    let detectedCode = "";
+    for (const [phrase, code] of rules) {
+        if (text.includes(phrase)) {
+            detectedCode = code;
+            text = text.replace(phrase, " ");
+            break;
+        }
+    }
+    text = text.replace(/[\s-]+/g, "-").replace(/^-+|-+$/g, "");
+    return text + "-©-A1R" + (detectedCode ? "-" + detectedCode : "");
 }
-
 function convertText(){
-    const text = normalize(document.getElementById("input").value);
-    const result = text ? text + "-©-A1R" : "";
+    const input = document.getElementById("input").value;
+    const result = input.trim() ? normalize(input) : "";
     document.getElementById("output").textContent = result;
     document.getElementById("count").textContent = result ? "Characters: " + result.length : "";
     document.getElementById("status").textContent = "";
 }
-
 async function copyResult(){
     const result = document.getElementById("output").textContent;
     const status = document.getElementById("status");
-
-    if(!result){ status.textContent = "Nothing to copy."; return; }
-
-    try{
-        await navigator.clipboard.writeText(result);
-        status.textContent = "Copied!";
-    }catch(e){
+    if(!result){status.textContent="Nothing to copy.";return;}
+    try{await navigator.clipboard.writeText(result);status.textContent="Copied!";}
+    catch(e){
         const area=document.createElement("textarea");
-        area.value=result;
-        area.style.position="fixed";
-        area.style.left="-9999px";
-        document.body.appendChild(area);
-        area.focus();
-        area.select();
-        try{
-            document.execCommand("copy");
-            status.textContent="Copied!";
-        }catch(err){
-            status.textContent="Copy blocked by browser. Press Ctrl+C after selecting the result.";
-        }
+        area.value=result;area.style.position="fixed";area.style.left="-9999px";
+        document.body.appendChild(area);area.focus();area.select();
+        try{document.execCommand("copy");status.textContent="Copied!";}
+        catch(err){status.textContent="Copy blocked by browser. Press Ctrl+C after selecting the result.";}
         area.remove();
     }
 }
-
 function clearAll(){
     document.getElementById("input").value="";
     document.getElementById("output").textContent="";
